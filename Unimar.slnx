@@ -1,0 +1,23 @@
+<Solution>
+  <Folder Name="/01 - API/">
+    <Project Path="src/Unimar.ProjetoAcademico.Api/Unimar.ProjetoAcademico.Api.csproj" />
+  </Folder>
+  <Folder Name="/02 - ApplicationService/">
+    <Project Path="src/Unimar.ProjetoAcademico.ApplicationService/Unimar.ProjetoAcademico.ApplicationService.csproj" />
+  </Folder>
+  <Folder Name="/03 - Domain/">
+    <Project Path="src/Unimar.ProjetoAcademico.Domain/Unimar.ProjetoAcademico.Domain.csproj" />
+  </Folder>
+  <Folder Name="/04 - Infra/" />
+  <Folder Name="/04 - Infra/04.1 - Data/">
+    <Project Path="src/Unimar.ProjetoAcademico.Infra.Data/Unimar.ProjetoAcademico.Infra.Data.csproj" />
+  </Folder>
+  <Folder Name="/04 - Infra/04.2 - CrossCutting/">
+    <Project Path="src/Unimar.ProjetoAcademico.Infra.CrossCutting.FluentValidator/Unimar.ProjetoAcademico.Infra.CrossCutting.FluentValidator.csproj" />
+    <Project Path="src/Unimar.ProjetoAcademico.Infra.CrossCutting.IoC/Unimar.ProjetoAcademico.Infra.CrossCutting.IoC.csproj" />
+    <Project Path="src/Unimar.ProjetoAcademico.Infra.CrossCutting.MediatoR/Unimar.ProjetoAcademico.Infra.CrossCutting.MediatoR.csproj" />
+    <Project Path="src/Unimar.ProjetoAcademico.Infra.CrossCutting.NotificationPattern/Unimar.ProjetoAcademico.Infra.CrossCutting.NotificationPattern.csproj" />
+    <Project Path="src/Unimar.ProjetoAcademico.Infra.CrossCutting.ServiceNotification/Unimar.ProjetoAcademico.Infra.CrossCutting.ServiceNotification.csproj" />
+    <Project Path="src/Unimar.ProjetoAcademico.Infra.CrossCutting.Swagger/Unimar.ProjetoAcademico.Infra.CrossCutting.Swagger.csproj" />
+  </Folder>
+</Solution>
