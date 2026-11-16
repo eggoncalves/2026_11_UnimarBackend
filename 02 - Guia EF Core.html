@@ -1,0 +1,359 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Estados no EF Core</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EEF1F5;--panel:#FFFFFF;--ink:#1A2433;--muted:#5B6779;--line:#D3DAE4;--soft:#F5F7FA;
+  --detached:#7C8799;--unchanged:#2563C9;--added:#178A5C;--modified:#B8740A;--deleted:#C8372D;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"Cascadia Code",Consolas,monospace;
+  color-scheme:light;box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#121822;--panel:#1A2230;--ink:#E6EBF2;--muted:#97A3B6;--line:#2B3545;--soft:#161D29;
+  --detached:#94A0B3;--unchanged:#6EA0F2;--added:#45C08A;--modified:#E8A93A;--deleted:#EF6B60;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#121822;--panel:#1A2230;--ink:#E6EBF2;--muted:#97A3B6;--line:#2B3545;--soft:#161D29;
+  --detached:#94A0B3;--unchanged:#6EA0F2;--added:#45C08A;--modified:#E8A93A;--deleted:#EF6B60;color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.6}
+.wrap{max-width:1100px;margin:0 auto;padding:32px 20px 56px}
+h1{font-size:clamp(28px,4vw,40px);line-height:1.12;font-weight:600;letter-spacing:-0.015em;margin:0 0 10px}
+h2{font-size:24px;line-height:1.2;font-weight:600;margin:0 0 6px;display:flex;align-items:baseline;gap:12px}
+h2 .num{font:500 15px var(--mono);color:var(--muted)}
+h3{font-size:16px;font-weight:600;margin:0 0 6px}
+p{margin:0 0 12px}
+.lede{color:var(--muted);max-width:64ch;margin-bottom:0}
+.sec{margin-top:44px}
+.sec>.intro{color:var(--muted);max-width:68ch;margin-bottom:18px}
+code,.mono{font-family:var(--mono);font-size:0.92em}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 20px;min-width:0}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:2px solid var(--unchanged);outline-offset:2px}
+
+/* parte 1 */
+.ctx{display:grid;grid-template-columns:minmax(0,0.95fr) minmax(0,1.05fr);gap:16px}
+.concepts{display:grid;gap:8px}
+.concept{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:11px 14px}
+.concept:hover{border-color:var(--muted)}
+.concept[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 3px 0 0 var(--ink)}
+.concept .t{font:500 14px var(--mono);grid-column:2}
+.concept .a{font-size:14px;color:var(--muted);grid-column:2}
+.concept .ic{grid-row:1/3;width:34px;height:34px;border-radius:8px;background:var(--soft);display:grid;place-items:center;color:var(--ink)}
+.concept .ic svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.code{background:var(--soft);border-radius:10px;padding:12px 0;font-family:var(--mono);font-size:13.5px;line-height:1.85;overflow-x:auto}
+.code .l{display:block;padding:0 14px;white-space:pre;border-left:3px solid transparent;transition:background .25s}
+.code .l.hl{background:color-mix(in srgb,var(--unchanged) 15%,transparent);border-left-color:var(--unchanged)}
+.code .gap{height:10px}
+.explain{margin-top:14px;padding:14px 16px;border-radius:10px;background:var(--soft)}
+.explain .an{font-size:14px;color:var(--muted);margin:0}
+.explain .an b{color:var(--ink);font-weight:500}
+.c-kw{color:var(--unchanged)}.c-str{color:var(--added)}.c-num{color:var(--modified)}.c-cm{color:var(--muted);font-style:italic}.c-ty{color:var(--modified)}.c-par{color:var(--deleted)}
+
+/* parte 2 */
+.lamps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-bottom:16px}
+.lamp{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:10px 12px;transition:background .35s,border-color .35s,transform .35s}
+.lamp .n{font:600 15px var(--sans);display:flex;align-items:center;gap:8px}
+.lamp .n i{width:10px;height:10px;border-radius:50%;background:var(--c);flex:none}
+.lamp .d{font-size:13px;color:var(--muted);margin-top:2px;line-height:1.4}
+.lamp.on{border-color:var(--c);background:color-mix(in srgb,var(--c) 14%,var(--panel));transform:translateY(-2px)}
+.lamp.on .n{color:var(--c)}
+.sim{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:16px}
+.entity{border:2px solid var(--line);border-radius:14px;padding:18px 20px;background:var(--panel);transition:border-color .35s}
+.entity .head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+.entity .cls{font:500 14px var(--mono);color:var(--muted)}
+.big{font:600 22px var(--mono);padding:4px 14px;border-radius:999px;color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent)}
+.big.pop{animation:pop .5s ease-out}
+@keyframes pop{0%{transform:scale(.85)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
+.props{font-family:var(--mono);font-size:15px;line-height:2;background:var(--soft);border-radius:8px;padding:8px 14px}
+.props .k{color:var(--muted);display:inline-block;width:64px}
+.props .chg{color:var(--modified);font-weight:500}
+.empty{color:var(--muted);background:var(--soft);border-radius:8px;padding:22px 14px;text-align:center;font-size:15px}
+.hist{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:14px;font:400 13px var(--mono)}
+.hist .h{padding:2px 9px;border-radius:6px;color:var(--c);background:color-mix(in srgb,var(--c) 13%,transparent)}
+.hist .ar{color:var(--muted)}
+.hist .lb{font-family:var(--sans);color:var(--muted);margin-right:4px}
+.ops{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:16px}
+.op{text-align:left;border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:9px 12px}
+.op:hover{border-color:var(--ink)}
+.op .c{display:block;font:500 13.5px var(--mono)}
+.op .s{display:block;font-size:13px;color:var(--muted)}
+.op.save{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.op.save .s{color:var(--paper);opacity:.75}
+.msg{border-radius:12px;padding:16px 18px;background:var(--panel);border:1px solid var(--line)}
+.msg .what{font-size:16px;margin:0 0 10px}
+.msg .garcom{font-size:14.5px;color:var(--muted);margin:0;padding-top:10px;border-top:1px dashed var(--line)}
+.msg .garcom b{color:var(--ink);font-weight:500}
+.tag{display:inline-block;font-size:12.5px;font-weight:500;padding:2px 10px;border-radius:999px;margin-bottom:8px}
+.mini{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin-top:12px}
+.lbl{font-size:13px;color:var(--muted);margin:0 0 6px}
+.box{background:var(--soft);border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:13px;line-height:1.7;white-space:pre-wrap;min-height:64px}
+.box.flash{animation:fl 1.1s ease-out}
+@keyframes fl{0%{background:color-mix(in srgb,var(--unchanged) 25%,var(--soft))}100%{background:var(--soft)}}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line)}
+th{font-weight:500;color:var(--muted);font-size:13px}
+td.v{font-family:var(--mono)}
+tr.fx-in td{animation:fin 1.6s ease-out}
+tr.fx-up td{animation:fup 1.6s ease-out}
+tr.fx-out td{text-decoration:line-through;color:var(--deleted);opacity:.6}
+@keyframes fin{0%{background:color-mix(in srgb,var(--added) 35%,transparent)}100%{background:transparent}}
+@keyframes fup{0%{background:color-mix(in srgb,var(--modified) 40%,transparent)}100%{background:transparent}}
+.reset{margin-top:10px;background:none;border:1px solid var(--line);border-radius:8px;padding:6px 12px;font-size:14px}
+
+/* parte 3 */
+.quiz{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
+.q .snip{background:var(--soft);border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:13px;line-height:1.7;white-space:pre;overflow-x:auto;margin-bottom:10px}
+.q .opts{display:flex;flex-wrap:wrap;gap:6px}
+.q .opts button{font:500 13px var(--mono);padding:5px 10px;border-radius:7px;border:1px solid var(--line);background:var(--panel)}
+.q .opts button:hover{border-color:var(--ink)}
+.q .opts button.right{border-color:var(--added);background:color-mix(in srgb,var(--added) 15%,transparent);color:var(--added)}
+.q .opts button.wrong{border-color:var(--deleted);color:var(--deleted);text-decoration:line-through}
+.q .fb{font-size:14px;margin:10px 0 0;color:var(--muted)}
+.score{font:500 15px var(--mono);color:var(--muted)}
+@media (max-width:860px){.ctx,.sim,.mini{grid-template-columns:minmax(0,1fr)}.lamps{grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>O que o Entity Framework faz com os seus objetos</h1>
+  <p class="lede">Antes de gravar no banco, o EF Core anota o que aconteceu com cada objeto: se é novo, se mudou, se deve ser apagado. Essa anotação se chama <code>State</code>. Vamos ver quem anota, como anota e o que acontece quando você salva.</p>
+
+  <!-- PARTE 1 -->
+  <section class="sec">
+    <h2><span class="num">1</span>O que é o DbContext</h2>
+    <p class="intro">O <code>DbContext</code> é a classe que fica entre o seu código C# e o banco de dados. Pense num garçom: você faz os pedidos para ele, ele anota tudo num caderninho e só leva à cozinha quando você fecha o pedido. Clique em cada parte para ver onde ela aparece no código.</p>
+    <div class="ctx">
+      <div class="concepts" id="concepts"></div>
+      <div class="card">
+        <div class="code" id="ctxCode"></div>
+        <div class="explain" id="ctxExplain"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PARTE 2 -->
+  <section class="sec">
+    <h2><span class="num">2</span>Veja o State mudando</h2>
+    <p class="intro">Execute as operações na ordem que quiser. A cada clique, observe o estado do objeto <code>produto</code>, o que o garçom anotaria e o SQL que o EF manda ao banco.</p>
+
+    <div class="lamps" id="lamps"></div>
+
+    <div class="sim">
+      <div>
+        <div class="entity" id="entity"></div>
+        <div class="ops">
+          <button class="op" data-a="novo"><span class="c">new Produto()</span><span class="s">Criar um objeto</span></button>
+          <button class="op" data-a="buscar"><span class="c">Find(1)</span><span class="s">Buscar do banco</span></button>
+          <button class="op" data-a="add"><span class="c">Add(produto)</span><span class="s">Pedir para inserir</span></button>
+          <button class="op" data-a="alterar"><span class="c">produto.Preco += 1</span><span class="s">Mudar um valor</span></button>
+          <button class="op" data-a="remove"><span class="c">Remove(produto)</span><span class="s">Pedir para apagar</span></button>
+          <button class="op save" data-a="save"><span class="c">SaveChanges()</span><span class="s">Enviar ao banco</span></button>
+        </div>
+        <button class="reset" id="reset">Recomeçar</button>
+      </div>
+      <div>
+        <div class="msg" aria-live="polite" id="msg"></div>
+        <div class="mini">
+          <div><p class="lbl">Código executado</p><div class="box" id="code"></div></div>
+          <div><p class="lbl">SQL enviado ao banco</p><div class="box" id="sql"></div></div>
+        </div>
+        <div class="card" style="margin-top:12px;padding:14px 16px">
+          <p class="lbl">Tabela Produtos no banco</p>
+          <div id="db"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PARTE 3 -->
+  <section class="sec">
+    <h2><span class="num">3</span>Teste rápido</h2>
+    <p class="intro" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px"><span>Qual é o <code>State</code> do produto depois de cada trecho?</span><span class="score" id="score"></span></p>
+    <div class="quiz" id="quiz"></div>
+  </section>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const COL=s=>'var(--'+s.toLowerCase()+')';
+function hl(line){return esc(line).replace(/(\/\/.*$)|("(?:[^"\\]|\\.)*")|\b(public|class|var|new|await|using|get|set|protected|override|void)\b|\b(DbContext|DbSet|Produto|LojaContext|DbContextOptionsBuilder)\b|\b(\d+m?)\b/g,(m,cm,st,kw,ty,num)=>cm?'<span class="c-cm">'+cm+'</span>':st?'<span class="c-str">'+st+'</span>':kw?'<span class="c-kw">'+kw+'</span>':ty?'<span class="c-ty">'+ty+'</span>':'<span class="c-num">'+num+'</span>');}
+
+/* ---------- PARTE 1: DbContext ---------- */
+const ICON={
+ ctx:'<svg viewBox="0 0 24 24"><circle cx="12" cy="7" r="3.5"/><path d="M5 21v-2a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v2"/></svg>',
+ set:'<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M4 15h16M10 4v16"/></svg>',
+ cfg:'<svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>',
+ trk:'<svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M9 10h7M9 14h7M9 18h4"/></svg>',
+ save:'<svg viewBox="0 0 24 24"><path d="M5 12h12M13 7l5 5-5 5"/></svg>',
+ db:'<svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v12c0 1.7 3.1 3 7 3s7-1.3 7-3V6M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3"/></svg>'
+};
+const CODE=[
+ {t:'// 1) A classe de contexto da aplicação',g:'ctx'},
+ {t:'public class LojaContext : DbContext',g:'ctx'},
+ {t:'{',g:'ctx'},
+ {t:'    public DbSet<Produto> Produtos { get; set; }',g:'set'},
+ {t:'',g:''},
+ {t:'    protected override void OnConfiguring(DbContextOptionsBuilder o)',g:'cfg'},
+ {t:'        => o.UseSqlServer("Server=.;Database=Loja;Trusted_Connection=True");',g:'cfg'},
+ {t:'}',g:'ctx'},
+ {gap:1},
+ {t:'// 2) Usando o contexto',g:''},
+ {t:'using var context = new LojaContext();',g:'ctx'},
+ {t:'var produto = new Produto { Nome = "Caneta", Preco = 5m };',g:''},
+ {t:'context.Produtos.Add(produto);   // anotado como Added',g:'trk'},
+ {t:'context.SaveChanges();           // gera o INSERT',g:'save'}
+];
+const CONCEPTS=[
+ {id:'ctx',name:'DbContext',an:'O garçom',
+  txt:'É a classe que representa uma conversa com o banco. Você cria a sua herdando de DbContext (aqui, LojaContext). Ela vive pouco: abre, faz o trabalho e é descartada (o using faz isso). Numa API ASP.NET Core, normalmente existe um por requisição.',
+  g:'Você não entra na cozinha. Fala com o garçom, e ele cuida do resto durante o seu atendimento.'},
+ {id:'set',name:'DbSet<Produto>',an:'Uma seção do cardápio',
+  txt:'Cada DbSet representa uma tabela vista pelo C#. É por ele que você consulta (context.Produtos.Where...) e pede inclusões e exclusões (Add, Remove).',
+  g:'O cardápio tem seções: pratos, bebidas, sobremesas. Cada DbSet é uma seção, ligada a uma tabela.'},
+ {id:'cfg',name:'UseSqlServer(...)',an:'O endereço da cozinha',
+  txt:'Diz qual banco usar e onde ele está, através da connection string. Pode ser SQL Server, MySQL, PostgreSQL, SQLite: o resto do código continua igual.',
+  g:'O garçom precisa saber para qual cozinha levar os pedidos.'},
+ {id:'trk',name:'ChangeTracker',an:'O caderninho de pedidos',
+  txt:'Fica dentro do DbContext. Para cada objeto que o contexto conhece, ele anota um State: Added, Modified, Deleted, Unchanged. Objetos que o contexto não conhece são Detached. Você não escreve essa parte: Add, Remove e as consultas fazem as anotações.',
+  g:'O garçom anota: "mesa 4, um suco novo; trocar o arroz; cancelar a sobremesa".'},
+ {id:'save',name:'SaveChanges()',an:'Levar o pedido à cozinha',
+  txt:'Lê o caderninho e transforma cada anotação em SQL: Added vira INSERT, Modified vira UPDATE, Deleted vira DELETE. Tudo vai numa transação. Depois, as anotações são limpas.',
+  g:'Só quando você fecha o pedido o garçom vai até a cozinha. Antes disso, nada foi preparado.'},
+ {id:'db',name:'Banco de dados',an:'A cozinha',
+  txt:'É onde os dados ficam guardados de verdade. O EF só conversa com ele através de comandos SQL, gerados pelo SaveChanges ou pelas consultas.',
+  g:'A cozinha só faz o que chega anotado. Se o garçom não anotou, não acontece.'}
+];
+let concept='ctx';
+function renderConcepts(){
+ $('concepts').innerHTML=CONCEPTS.map(c=>'<button class="concept" data-c="'+c.id+'" aria-pressed="'+(c.id===concept)+'"><span class="ic">'+ICON[c.id]+'</span><span class="t">'+c.name+'</span><span class="a">'+c.an+'</span></button>').join('');
+ $('ctxCode').innerHTML=CODE.map(l=>l.gap?'<span class="gap" style="display:block"></span>':'<span class="l'+(l.g===concept||(concept==='db'&&l.g==='cfg')?' hl':'')+'">'+(hl(l.t)||' ')+'</span>').join('');
+ const c=CONCEPTS.find(x=>x.id===concept);
+ $('ctxExplain').innerHTML='<h3>'+c.name+'</h3><p>'+esc(c.txt)+'</p><p class="an"><b>Na analogia:</b> '+esc(c.g)+'</p>';
+}
+$('concepts').addEventListener('click',e=>{const b=e.target.closest('.concept');if(b){concept=b.dataset.c;renderConcepts();}});
+
+/* ---------- PARTE 2: simulador ---------- */
+const STATES=[
+ {k:'Detached',d:'O contexto não conhece o objeto'},
+ {k:'Added',d:'Novo: vai virar INSERT'},
+ {k:'Unchanged',d:'Igual ao banco: nada a fazer'},
+ {k:'Modified',d:'Alterado: vai virar UPDATE'},
+ {k:'Deleted',d:'Marcado: vai virar DELETE'}
+];
+let S;
+function fresh(){S={db:[{Id:1,Nome:'Caderno',Preco:20},{Id:2,Nome:'Lápis',Preco:2}],next:3,p:null,orig:null,state:null,hist:[],code:[],sql:'',fx:null,pop:false,
+ msg:{w:'Comece criando um objeto com new Produto() ou buscando um produto do banco com Find(1).',g:'Você acabou de sentar à mesa. O garçom ainda não anotou nada.',t:''}};}
+function setState(s){if(S.state!==s){S.state=s;S.hist.push(s);S.pop=true;}}
+function m(w,g,t){S.msg={w,g,t:t||''};}
+function act(a){
+ S.fx=null;S.pop=false;let sqlNew=false;
+ if(!S.p&&!['novo','buscar'].includes(a)){m('Ainda não existe objeto. Use new Produto() ou Find(1) primeiro.','Não dá para pedir algo ao garçom sem dizer o quê.','warn');return render(false);}
+ switch(a){
+ case'novo':
+  S.p={Id:0,Nome:'Caneta',Preco:5};S.orig=null;S.hist=[];S.state=null;setState('Detached');
+  S.code.push('var produto = new Produto { Nome = "Caneta", Preco = 5m };');
+  m('O objeto existe só na memória do C#. O DbContext não sabe dele, por isso o estado é Detached. Se você chamar SaveChanges agora, nada acontece.','Você pensou em pedir uma caneta, mas ainda não falou com o garçom.');break;
+ case'buscar':{
+  const r=S.db.find(x=>x.Id===1)||S.db[0];if(!r){m('A tabela está vazia. Recomece para restaurar os dados.','A cozinha está sem nada.','warn');break;}
+  S.p={...r};S.orig={...r};S.hist=[];S.state=null;setState('Unchanged');
+  S.code.push('var produto = context.Produtos.Find('+r.Id+');');
+  S.sql='SELECT TOP(1) Id, Nome, Preco\nFROM Produtos\nWHERE Id = '+r.Id;sqlNew=true;
+  m('O EF buscou a linha no banco, criou o objeto e já começou a acompanhá-lo. Como ele está igual ao banco, o estado é Unchanged.','O garçom trouxe o prato e anotou: "entregue, nada pendente".');break;}
+ case'add':
+  S.code.push('context.Produtos.Add(produto);');
+  if(S.state==='Detached'&&S.p.Id===0){setState('Added');m('Add() avisa o contexto que este objeto é novo. Estado: Added. O Id ainda é 0, porque quem gera o Id é o banco, no momento do INSERT.','O garçom anotou: "novo pedido: uma caneta".','');}
+  else if(S.state==='Detached'){m('Este objeto já tem Id e já foi salvo antes. Usar Add() nele tentaria inserir de novo. Use Find(1) para trabalhar com produtos existentes.','Pedir de novo um prato que já está na mesa.','warn');}
+  else m('O objeto já está sendo acompanhado (estado '+S.state+'). Não precisa chamar Add().','O pedido já está no caderninho.','warn');break;
+ case'alterar':
+  S.p.Preco+=1;S.code.push('produto.Preco = '+S.p.Preco+'m;');
+  if(S.state==='Unchanged'){setState('Modified');m('O preço ficou diferente do que veio do banco, então o estado vira Modified. Detalhe: o EF percebe essa diferença comparando os valores, o que ele faz automaticamente no SaveChanges.','O garçom anotou: "trocar o preço do caderno".');}
+  else if(S.state==='Modified')m('Continua Modified. No UPDATE vai o valor mais recente.','Mais um ajuste no mesmo pedido.');
+  else if(S.state==='Added')m('Continua Added. O objeto ainda não foi para o banco, então o INSERT já sairá com o novo preço.','Mudou o pedido antes de ir para a cozinha: o garçom só corrige a anotação.');
+  else if(S.state==='Deleted')m('O objeto está marcado para exclusão, então mudar o preço não faz diferença.','Você mexeu num pedido que já mandou cancelar.','warn');
+  else m('O objeto está Detached: o contexto não acompanha este objeto, então a mudança não será salva.','O garçom não está sabendo dessa mudança.','warn');
+  break;
+ case'remove':
+  S.code.push('context.Produtos.Remove(produto);');
+  if(S.state==='Unchanged'||S.state==='Modified'){setState('Deleted');m('Remove() não apaga na hora. Ele só marca o objeto como Deleted. A linha continua no banco até o SaveChanges.','O garçom anotou: "cancelar o caderno".');}
+  else if(S.state==='Added'){setState('Detached');m('O objeto era Added, ou seja, nunca chegou ao banco. Então o EF simplesmente esquece dele: volta a ser Detached e nenhum DELETE será gerado.','Você cancelou antes de o garçom ir à cozinha. Ele só risca do caderninho.');}
+  else if(S.state==='Deleted')m('Já está marcado como Deleted.','O cancelamento já está anotado.','warn');
+  else m('Objeto Detached não está no caderninho: não há o que remover.','Cancelar algo que você nunca pediu.','warn');
+  break;
+ case'save':
+  S.code.push('context.SaveChanges();');sqlNew=true;
+  if(S.state==='Added'){const id=S.next++;S.db.push({Id:id,Nome:S.p.Nome,Preco:S.p.Preco});S.p.Id=id;S.orig={...S.p};S.fx={k:'in',id};
+   S.sql='INSERT INTO Produtos (Nome, Preco)\nVALUES (\''+S.p.Nome+'\', '+S.p.Preco.toFixed(2)+');';setState('Unchanged');
+   m('Como estava Added, o EF gerou um INSERT. O banco criou o Id '+id+', que voltou para o objeto. Agora o produto está igual ao banco: Unchanged.','O pedido foi para a cozinha e chegou à mesa. Caderninho em dia.','ok');}
+  else if(S.state==='Modified'){const r=S.db.find(x=>x.Id===S.p.Id);r.Preco=S.p.Preco;r.Nome=S.p.Nome;S.orig={...S.p};S.fx={k:'up',id:r.Id};
+   S.sql='UPDATE Produtos\nSET Preco = '+S.p.Preco.toFixed(2)+'\nWHERE Id = '+S.p.Id+';';setState('Unchanged');
+   m('Como estava Modified, o EF gerou um UPDATE só com a coluna que mudou. Depois de salvar, volta a ser Unchanged.','A troca foi feita na cozinha. Nada mais pendente.','ok');}
+  else if(S.state==='Deleted'){const i=S.db.findIndex(x=>x.Id===S.p.Id);const row=S.db.splice(i,1)[0];S.fx={k:'out',row,i};
+   S.sql='DELETE FROM Produtos\nWHERE Id = '+S.p.Id+';';setState('Detached');
+   m('Como estava Deleted, o EF gerou um DELETE. A linha saiu do banco e o contexto deixou de acompanhar o objeto: Detached. O objeto ainda existe no C#, só não está mais ligado ao banco.','O pedido foi cancelado na cozinha e riscado do caderninho.','ok');}
+  else if(S.state==='Unchanged'){S.sql='-- nenhum comando';m('Estado Unchanged: não há nada diferente do banco, então o EF não envia nenhum comando.','O garçom olhou o caderninho e não tinha nada pendente.','warn');}
+  else {S.sql='-- nenhum comando';m('Estado Detached: o contexto não conhece este objeto, então o SaveChanges o ignora. Para inserir, chame Add() antes.','O garçom não leva à cozinha um pedido que nunca anotou.','warn');}
+  break;
+ }
+ render(sqlNew);
+}
+const TAG={warn:['Atenção','--modified'],ok:['Enviado ao banco','--added']};
+function render(sqlNew){
+ $('lamps').innerHTML=STATES.map(s=>'<div class="lamp'+(S.state===s.k?' on':'')+'" style="--c:'+COL(s.k)+'"><div class="n"><i></i>'+s.k+'</div><div class="d">'+s.d+'</div></div>').join('');
+ const e=$('entity');
+ if(!S.p){e.style.borderColor='';e.innerHTML='<div class="head"><span class="cls">produto : Produto</span></div><div class="empty">Nenhum objeto ainda</div>';}
+ else{
+  const c=COL(S.state);e.style.borderColor=c;
+  const diff=k=>S.orig&&S.state==='Modified'&&S.p[k]!==S.orig[k];
+  const v=(k,val)=>diff(k)?'<span class="chg">'+val+'</span> <span style="color:var(--muted);font-size:13px">(era '+(k==='Preco'?S.orig[k].toFixed(2):S.orig[k])+')</span>':val;
+  e.innerHTML='<div class="head"><span class="cls">produto : Produto</span><span class="big'+(S.pop?' pop':'')+'" style="--c:'+c+'">'+S.state+'</span></div>'+
+   '<div class="props"><span class="k">Id</span>'+S.p.Id+(S.p.Id===0?' <span style="color:var(--muted);font-size:13px">(ainda sem Id)</span>':'')+'<br><span class="k">Nome</span>"'+S.p.Nome+'"<br><span class="k">Preco</span>'+v('Preco',S.p.Preco.toFixed(2))+'</div>'+
+   '<div class="hist"><span class="lb">Caminho:</span>'+S.hist.map(h=>'<span class="h" style="--c:'+COL(h)+'">'+h+'</span>').join('<span class="ar">→</span>')+'</div>';
+ }
+ const t=TAG[S.msg.t];
+ $('msg').innerHTML=(t?'<span class="tag" style="color:var('+t[1]+');background:color-mix(in srgb,var('+t[1]+') 14%,transparent)">'+t[0]+'</span>':'')+'<p class="what">'+esc(S.msg.w)+'</p><p class="garcom"><b>Na analogia do garçom:</b> '+esc(S.msg.g)+'</p>';
+ $('code').innerHTML=S.code.length?S.code.slice(-4).map(hl).join('\n'):'<span class="c-cm">// nada ainda</span>';
+ const q=$('sql');q.innerHTML=S.sql?esc(S.sql).replace(/^(--.*)$/gm,'<span class="c-cm">$1</span>').replace(/\b(SELECT|TOP|FROM|WHERE|INSERT|INTO|VALUES|UPDATE|SET|DELETE)\b/g,'<span class="c-kw">$1</span>'):'<span class="c-cm">-- nada enviado ainda</span>';
+ q.classList.remove('flash');if(sqlNew){void q.offsetWidth;q.classList.add('flash');}
+ const rows=S.db.map(r=>({r,c:S.fx&&S.fx.id===r.Id?(S.fx.k==='in'?'fx-in':'fx-up'):''}));
+ if(S.fx&&S.fx.k==='out')rows.splice(S.fx.i,0,{r:S.fx.row,c:'fx-out'});
+ $('db').innerHTML='<table><thead><tr><th>Id</th><th>Nome</th><th>Preco</th></tr></thead><tbody>'+(rows.length?rows.map(x=>'<tr class="'+x.c+'"><td class="v">'+x.r.Id+'</td><td>'+x.r.Nome+'</td><td class="v">'+x.r.Preco.toFixed(2)+'</td></tr>').join(''):'<tr><td colspan="3" style="color:var(--muted)">Tabela vazia</td></tr>')+'</tbody></table>';
+}
+document.querySelectorAll('.op').forEach(b=>b.onclick=()=>act(b.dataset.a));
+$('reset').onclick=()=>{fresh();render(false);};
+
+/* ---------- PARTE 3: quiz ---------- */
+const QZ=[
+ {c:'var p = new Produto { Nome = "Régua" };',a:'Detached',f:'Sem Add(), o contexto nem sabe que o objeto existe.'},
+ {c:'var p = new Produto { Nome = "Régua" };\ncontext.Produtos.Add(p);',a:'Added',f:'Add() marca o objeto como novo. O INSERT só acontece no SaveChanges.'},
+ {c:'var p = context.Produtos.Find(1);',a:'Unchanged',f:'Veio do banco e ninguém mexeu: está igual ao banco.'},
+ {c:'var p = context.Produtos.Find(1);\np.Preco = 30m;',a:'Modified',f:'Ficou diferente do que veio do banco: o EF vai gerar um UPDATE.'},
+ {c:'var p = context.Produtos.Find(1);\ncontext.Produtos.Remove(p);',a:'Deleted',f:'Marcado para exclusão. O DELETE sai no SaveChanges.'},
+ {c:'var p = new Produto { Nome = "Régua" };\ncontext.Produtos.Add(p);\ncontext.SaveChanges();',a:'Unchanged',f:'Depois do INSERT, o objeto fica igual ao banco e continua sendo acompanhado.'}
+];
+const ans={};
+function renderQuiz(){
+ const keys=STATES.map(s=>s.k);
+ $('quiz').innerHTML=QZ.map((q,i)=>{const r=ans[i];return '<div class="card q"><p class="lbl">Pergunta '+(i+1)+'</p><div class="snip">'+q.c.split('\n').map(hl).join('\n')+'</div><div class="opts">'+keys.map(k=>{let cls='';if(r){if(k===q.a&&r.ok)cls='right';else if(r.tried.includes(k))cls='wrong';}return '<button data-q="'+i+'" data-k="'+k+'" class="'+cls+'"'+(r&&r.ok?' disabled':'')+'>'+k+'</button>';}).join('')+'</div>'+(r?'<p class="fb">'+(r.ok?'<span style="color:var(--added);font-weight:500">Certo.</span> '+q.f:'<span style="color:var(--deleted);font-weight:500">Ainda não.</span> Tente outra opção.')+'</p>':'')+'</div>';}).join('');
+ const done=Object.values(ans).filter(r=>r.ok).length,first=Object.values(ans).filter(r=>r.ok&&r.tried.length===1).length;
+ $('score').textContent=done+' de '+QZ.length+' respondidas'+(done?' ('+first+' de primeira)':'');
+}
+$('quiz').addEventListener('click',e=>{const b=e.target.closest('button[data-q]');if(!b)return;const i=+b.dataset.q,k=b.dataset.k;const r=ans[i]||(ans[i]={tried:[],ok:false});if(r.ok)return;r.tried.push(k);r.ok=k===QZ[i].a;renderQuiz();});
+
+renderConcepts();fresh();render(false);renderQuiz();
+</script>
+</body>
+</html>
+
+</body></html>

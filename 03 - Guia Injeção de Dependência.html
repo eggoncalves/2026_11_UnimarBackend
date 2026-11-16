@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Injeção de dependência no C#: lifetimes</title>
+<style>
+:root{
+  --bg:#faf9f5;--surface:#ffffff;--surface-1:#f3f2ee;--text:#1f1e1d;--text-2:#5f5e5a;--text-3:#888780;
+  --border:rgba(31,30,29,.15);--border-strong:rgba(31,30,29,.3);--accent:#185FA5;
+  --ok-bg:#EAF3DE;--ok-fg:#27500A;--err-bg:#FCEBEB;--err-fg:#791F1F;
+  --code-bg:#f1efe8;--radius:8px;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#1a1a18;--surface:#262624;--surface-1:#30302e;--text:#f1efe8;--text-2:#b4b2a9;--text-3:#888780;
+  --border:rgba(241,239,232,.15);--border-strong:rgba(241,239,232,.3);--accent:#85B7EB;
+  --ok-bg:#27500A;--ok-fg:#EAF3DE;--err-bg:#791F1F;--err-fg:#FCEBEB;--code-bg:#30302e}
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:16px;line-height:1.7}
+main{max-width:760px;margin:0 auto;padding:2.5rem 1.25rem 4rem}
+h1{font-size:28px;font-weight:500;line-height:1.3;margin:0 0 .5rem}
+h2{font-size:22px;font-weight:500;margin:3rem 0 .75rem;padding-top:1.5rem;border-top:.5px solid var(--border)}
+h3{font-size:17px;font-weight:500;margin:2rem 0 .5rem}
+p.lead{color:var(--text-2);margin:0 0 2rem}
+code{font-family:var(--mono);font-size:.9em;background:var(--code-bg);padding:1px 5px;border-radius:4px}
+pre{background:var(--code-bg);border-radius:var(--radius);padding:14px 16px;overflow-x:auto;font-size:13.5px;line-height:1.6}
+pre code{background:none;padding:0}
+table{width:100%;border-collapse:collapse;font-size:14.5px;margin:1rem 0}
+th,td{text-align:left;padding:8px 10px;border-bottom:.5px solid var(--border);vertical-align:top}
+th{font-weight:500}
+ul,ol{padding-left:1.4rem}
+li{margin-bottom:.4rem}
+button{font:inherit;font-size:14px;color:var(--text);background:transparent;border:.5px solid var(--border-strong);border-radius:var(--radius);padding:7px 14px;cursor:pointer}
+button:hover{background:var(--surface-1)}
+button:active{transform:scale(.98)}
+button[aria-pressed="true"]{border:1.5px solid var(--accent);color:var(--accent)}
+.sim{margin:1.5rem 0 2rem;padding:1.25rem;border:.5px solid var(--border);border-radius:12px;background:var(--surface)}
+.controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem}
+.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:1rem}
+.metric{background:var(--surface-1);border-radius:var(--radius);padding:10px 12px}
+.metric span{display:block;font-size:13px;color:var(--text-2)}
+.metric strong{font-size:22px;font-weight:500}
+.grid4{display:grid;grid-template-columns:100px repeat(3,minmax(0,1fr));gap:8px;align-items:center;font-size:13px;margin-bottom:6px}
+.grid3{display:grid;grid-template-columns:110px repeat(2,minmax(0,1fr));gap:8px;align-items:center;font-size:13px;margin-bottom:6px}
+.hd{font-weight:500;text-align:center}
+.lbl{font-family:var(--mono);font-size:12px}
+.badge{border-radius:var(--radius);padding:6px 8px;text-align:center;font-family:var(--mono);font-size:12px}
+.req{background:var(--surface-1);border-radius:12px;padding:12px 14px;margin-bottom:10px}
+.req-title{font-size:13px;color:var(--text-2);margin-bottom:8px}
+.empty{font-size:14px;color:var(--text-2);text-align:center;padding:1.5rem 0;margin:0}
+.tip{font-size:13.5px;color:var(--text-2);margin:.5rem 0 0;min-height:1.2em}
+.rule{background:var(--surface-1);border-radius:var(--radius);padding:12px 16px;margin:1rem 0}
+footer{margin-top:3rem;font-size:13px;color:var(--text-3)}
+@media (max-width:560px){.grid4{grid-template-columns:76px repeat(3,minmax(0,1fr))}.metrics{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+
+<h1>Injeção de dependência no C#</h1>
+<p class="lead">Os lifetimes Transient, Scoped e Singleton, com um simulador interativo.</p>
+
+<h2 style="border-top:none;padding-top:0;margin-top:1.5rem">Os tipos de lifetime</h2>
+
+<p>O container de DI do .NET (<code>IServiceCollection</code>) não decide apenas <em>qual</em> classe entregar. Ele decide também <em>por quanto tempo</em> aquela instância vive. Esse tempo é o lifetime, e existem três:</p>
+
+<table>
+<thead><tr><th>Lifetime</th><th>Quando cria uma nova instância</th><th>Analogia</th></tr></thead>
+<tbody>
+<tr><td><code>Transient</code></td><td>A cada vez que alguém pede</td><td>Copo descartável: cada pedido ganha um novo</td></tr>
+<tr><td><code>Scoped</code></td><td>Uma vez por escopo (no ASP.NET, uma por requisição HTTP)</td><td>Mesa no restaurante: todos da mesma mesa dividem a garrafa d'água</td></tr>
+<tr><td><code>Singleton</code></td><td>Uma única vez na vida da aplicação</td><td>O relógio da parede: todo mundo olha para o mesmo</td></tr>
+</tbody>
+</table>
+
+<h3>Simulador de lifetimes</h3>
+<p>Cada requisição HTTP injeta os três serviços em dois lugares, o <code>Controller</code> e o <code>Service</code>. Cada cor representa uma instância diferente. Repare em quais cores se repetem e em quais mudam.</p>
+
+<div class="sim">
+  <div class="controls">
+    <button id="bReq">Nova requisição HTTP</button>
+    <button id="bApp">Reiniciar aplicação</button>
+  </div>
+  <div class="metrics">
+    <div class="metric"><span>Transient criados</span><strong id="cT">0</strong></div>
+    <div class="metric"><span>Scoped criados</span><strong id="cS">0</strong></div>
+    <div class="metric"><span>Singleton criados</span><strong id="cG">0</strong></div>
+  </div>
+  <div class="grid4" style="padding:0 14px"><span></span><span class="hd">Transient</span><span class="hd">Scoped</span><span class="hd">Singleton</span></div>
+  <div id="list"><p class="empty">Clique em "Nova requisição HTTP" para começar.</p></div>
+  <p class="tip" id="tip"></p>
+</div>
+
+<h3>Como registrar no <code>Program.cs</code></h3>
+<pre><code>builder.Services.AddTransient&lt;IEmailFormatter, EmailFormatter&gt;();
+builder.Services.AddScoped&lt;IPedidoRepository, PedidoRepository&gt;();
+builder.Services.AddSingleton&lt;ICacheService, MemoryCacheService&gt;();</code></pre>
+
+<h3>Quando usar cada um</h3>
+<ul>
+<li><strong>Transient</strong>: para serviços leves e sem estado, como formatadores, validadores e mapeadores. Como são baratos de criar, não há problema em gerar um novo a cada injeção.</li>
+<li><strong>Scoped</strong>: para tudo que deve ser compartilhado <em>dentro</em> de uma requisição e isolado <em>entre</em> requisições. O exemplo clássico é o <code>DbContext</code> do Entity Framework (<code>AddDbContext</code> já registra como Scoped): o Controller e o Repository enxergam a mesma unidade de trabalho e o mesmo controle de transação, mas o usuário A nunca compartilha contexto com o usuário B.</li>
+<li><strong>Singleton</strong>: para recursos caros de criar ou que precisam ser globais, como cache em memória, configurações e o <code>HttpClientFactory</code>. Atenção: o Singleton é acessado por várias threads ao mesmo tempo, então precisa ser thread-safe.</li>
+</ul>
+
+<div class="rule">A pergunta que resume tudo: <strong>quem divide esta instância com quem?</strong> Ninguém divide (Transient), todos da mesma requisição dividem (Scoped) ou a aplicação inteira divide (Singleton).</div>
+
+<footer>Material de apoio sobre injeção de dependência no ASP.NET Core.</footer>
+</main>
+
+<script>
+(function(){
+  const pal=[['#EEEDFE','#3C3489'],['#E1F5EE','#085041'],['#FAECE7','#712B13'],['#FBEAF0','#72243E'],['#E6F1FB','#0C447C'],['#EAF3DE','#27500A'],['#FAEEDA','#633806'],['#F1EFE8','#444441']];
+  const dark=()=>matchMedia('(prefers-color-scheme: dark)').matches;
+  const hex=()=>Math.random().toString(16).slice(2,6);
+  const $=id=>document.getElementById(id);
+
+  let n={T:0,S:0,G:0},single=null,reqs=[],rc=0,app=1;
+  function mk(k){n[k]++;return{id:hex(),c:(n[k]*3+(k==='S'?1:k==='G'?2:0))%pal.length}}
+  function badge(o){const p=pal[o.c];const bg=dark()?p[1]:p[0],fg=dark()?p[0]:p[1];return '<span class="badge" style="background:'+bg+';color:'+fg+'">#'+o.id+'</span>'}
+  function draw(){
+    $('cT').textContent=n.T;$('cS').textContent=n.S;$('cG').textContent=n.G;
+    $('list').innerHTML=reqs.map(r=>'<div class="req"><div class="req-title">Requisição '+r.rc+' · aplicação '+r.app+'</div>'+
+      r.rows.map(x=>'<div class="grid4"><span class="lbl">'+x[0]+'</span>'+badge(x[1])+badge(x[2])+badge(x[3])+'</div>').join('')+'</div>').join('');
+    const t=$('tip');
+    if(rc===1)t.textContent='Transient: Controller e Service receberam instâncias diferentes. Scoped e Singleton: a mesma instância nos dois.';
+    else if(rc===2)t.textContent='Na nova requisição, o Scoped mudou de cor (novo escopo), mas o Singleton continua o mesmo.';
+    else t.textContent='Experimente reiniciar a aplicação: só então o Singleton é recriado.';
+  }
+  $('bReq').onclick=function(){rc++;if(!single)single=mk('G');const sc=mk('S');
+    reqs.unshift({rc:rc,app:app,rows:[['Controller',mk('T'),sc,single],['Service',mk('T'),sc,single]]});
+    if(reqs.length>4)reqs.pop();draw()};
+  $('bApp').onclick=function(){single=null;app++;rc=0;reqs=[];n={T:0,S:0,G:0};
+    $('list').innerHTML='<p class="empty">Aplicação reiniciada. Dispare uma nova requisição.</p>';$('tip').textContent='';
+    ['cT','cS','cG'].forEach(i=>$(i).textContent=0)};
+
+})();
+</script>
+</body>
+</html>
